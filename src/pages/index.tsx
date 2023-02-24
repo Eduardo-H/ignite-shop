@@ -1,30 +1,66 @@
+import Stripe from 'stripe';
 import Image from 'next/image';
+import { GetServerSideProps } from 'next';
+import { useKeenSlider } from 'keen-slider/react';
+import 'keen-slider/keen-slider.min.css';
+
+import { stripe } from '@/lib/stripe';
 import { HomeContainer, Product } from '@/styles/pages/home';
 
-import shirt1 from '../assets/shirts/1.png';
-import shirt2 from '../assets/shirts/2.png';
-import shirt3 from '../assets/shirts/3.png';
+interface HomeProps {
+  products: {
+    id: string;
+    name: string;
+    imageUrl: string;
+    price: number;
+  }[];
+}
 
-export default function Home() {
+export default function Home({ products }: HomeProps) {
+  const [sliderRef] = useKeenSlider({
+    slides: {
+      perView: 3,
+      spacing: 48
+    }
+  });
+
   return (
-    <HomeContainer>
-      <Product>
-        <Image src={shirt1} width={520} height={401} alt="" />
+    <HomeContainer ref={sliderRef} className="keen-slider">
+      { products.map(product => (
+        <Product className="keen-slider__slide" key={product.id}>
+          <Image src={product.imageUrl} width={520} height={401} alt="" />
 
-        <footer>
-          <strong>T-Shirt Ignite Lab</strong>
-          <span>$19,90</span>
-        </footer>
-      </Product>
+          <footer>
+            <strong>{product.name}</strong>
+            <span>${product.price}</span>
+          </footer>
+        </Product>
+      )) }
 
-      <Product>
-        <Image src={shirt2} width={520} height={401} alt="" />
-
-        <footer>
-          <strong>T-Shirt Ignite Aboard</strong>
-          <span>$29,90</span>
-        </footer>
-      </Product>
+      
     </HomeContainer>
   );
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const response = await stripe.products.list({
+    expand: ['data.default_price']
+  });
+
+  const products = response.data.map(product => {
+    const price = product.default_price as Stripe.Price;
+
+    return {
+      id: product.id,
+      name: product.name,
+      imageUrl: product.images[0],
+      price: price.unit_amount && price.unit_amount / 100
+    }
+  });
+
+  return {
+    props: {
+      products
+    }
+  }
 }
