@@ -7,6 +7,7 @@ import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useState } from 'react';
+import Head from 'next/head';
 
 interface ProductProps {
   product: {
@@ -46,22 +47,28 @@ export default function Product({ product }: ProductProps) {
   }
 
   return (
-    <ProductContainer>
-      <ImageContainer>
-        <Image src={product.imageUrl} width={420} height={480} alt="" />
-      </ImageContainer>
+    <>
+      <Head>
+        <title>Ignite Shop | {product.name}</title>
+      </Head>
 
-      <ProductDetails>
-        <h1>{product.name}</h1>
-        <span>{product.price}</span>
+      <ProductContainer>
+        <ImageContainer>
+          <Image src={product.imageUrl} width={420} height={480} alt="" />
+        </ImageContainer>
 
-        <p>{product.description}</p>
+        <ProductDetails>
+          <h1>{product.name}</h1>
+          <span>{product.price}</span>
 
-        <button onClick={handleByProduct} disabled={isCreatingCheckoutSession}>
-          Buy now
-        </button>
-      </ProductDetails>
-    </ProductContainer>
+          <p>{product.description}</p>
+
+          <button onClick={handleByProduct} disabled={isCreatingCheckoutSession}>
+            Buy now
+          </button>
+        </ProductDetails>
+      </ProductContainer>
+    </>
   );
 }
 
