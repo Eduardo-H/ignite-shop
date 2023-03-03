@@ -5,6 +5,8 @@ import Stripe from 'stripe';
 
 import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
 import { useRouter } from 'next/router';
+import axios from 'axios';
+import { useState } from 'react';
 
 interface ProductProps {
   product: {
@@ -13,11 +15,31 @@ interface ProductProps {
     description: string;
     imageUrl: string;
     price: string;
+    defaultPriceId: string;
   }
 }
 
 export default function Product({ product }: ProductProps) {
   const { isFallback } = useRouter();
+  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
+
+  async function handleByProduct() {
+    try {
+      setIsCreatingCheckoutSession(true);
+
+      const response = await axios.post('/api/checkout', {
+        priceId: product.defaultPriceId
+      });
+
+      const { checkoutUrl } = response.data;
+
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      setIsCreatingCheckoutSession(false);
+
+      alert('Error trying to redirect to checkout');
+    }
+  }
 
   if (isFallback) {
     return <p>Loading...</p>
@@ -35,7 +57,7 @@ export default function Product({ product }: ProductProps) {
 
         <p>{product.description}</p>
 
-        <button>
+        <button onClick={handleByProduct} disabled={isCreatingCheckoutSession}>
           Buy now
         </button>
       </ProductDetails>
@@ -53,7 +75,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ params }) => {
-  const productId = params.id;
+  // Telling TypeScript that the parameter 'params' is not undefined
+  // by using the '!' sign
+  const productId = params!.id;
 
   const product = await stripe.products.retrieve(productId, {
     expand: ['default_price']
@@ -71,7 +95,8 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
         price: price.unit_amount && new Intl.NumberFormat('us', {
           style: 'currency',
           currency: 'USD'
-        }).format(price.unit_amount / 100)
+        }).format(price.unit_amount / 100),
+        defaultPriceId: price.id
       }
     },
     revalidate: 60 * 60 * 1 // 1 hour
