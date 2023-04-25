@@ -6,8 +6,9 @@ import Stripe from 'stripe';
 import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Head from 'next/head';
+import { CartContext } from '@/contexts/CartContext';
 
 interface ProductProps {
   product: {
@@ -15,7 +16,8 @@ interface ProductProps {
     name: string;
     description: string;
     imageUrl: string;
-    price: string;
+    price: number;
+    formatedPrice: string;
     defaultPriceId: string;
   }
 }
@@ -24,22 +26,36 @@ export default function Product({ product }: ProductProps) {
   const { isFallback } = useRouter();
   const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
 
+  const { addItemToCart } = useContext(CartContext);
+
   async function handleByProduct() {
-    try {
-      setIsCreatingCheckoutSession(true);
+    addItemToCart({
+      productId: product.id,
+      description: product.description,
+      name: product.name,
+      imageUrl: product.imageUrl,
+      price: product.price,
+      quantity: 1,
+      defaultPriceId: product.defaultPriceId
+    });
 
-      const response = await axios.post('/api/checkout', {
-        priceId: product.defaultPriceId
-      });
+    window.location.href = '/';
 
-      const { checkoutUrl } = response.data;
+    // try {
+    //   setIsCreatingCheckoutSession(true);
 
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      setIsCreatingCheckoutSession(false);
+    //   const response = await axios.post('/api/checkout', {
+    //     priceId: product.defaultPriceId
+    //   });
 
-      alert('Error trying to redirect to checkout');
-    }
+    //   const { checkoutUrl } = response.data;
+
+    //   window.location.href = checkoutUrl;
+    // } catch (error) {
+    //   setIsCreatingCheckoutSession(false);
+
+    //   alert('Error trying to redirect to checkout');
+    // }
   }
 
   if (isFallback) {
@@ -59,7 +75,7 @@ export default function Product({ product }: ProductProps) {
 
         <ProductDetails>
           <h1>{product.name}</h1>
-          <span>{product.price}</span>
+          <span>{product.formatedPrice}</span>
 
           <p>{product.description}</p>
 
@@ -99,7 +115,8 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
         name: product.name,
         description: product.description,
         imageUrl: product.images[0],
-        price: price.unit_amount && new Intl.NumberFormat('us', {
+        price: price.unit_amount && price.unit_amount / 100,
+        formatedPrice: price.unit_amount && new Intl.NumberFormat('us', {
           style: 'currency',
           currency: 'USD'
         }).format(price.unit_amount / 100),
