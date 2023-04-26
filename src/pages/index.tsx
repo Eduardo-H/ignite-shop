@@ -1,13 +1,17 @@
 import Stripe from 'stripe';
 import Image from 'next/image';
 import Link from 'next/link';
+import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 
 import { stripe } from '@/lib/stripe';
+
+import { Header } from '@/components/Header';
+import { CartCheckout } from '@/components/CartCheckout';
+
 import { HomeContainer, Product } from '@/styles/pages/home';
-import Head from 'next/head';
 
 interface HomeProps {
   products: {
@@ -31,6 +35,9 @@ export default function Home({ products }: HomeProps) {
       <Head>
         <title>Ignite Shop | Home</title>
       </Head>
+
+      <Header />
+      <CartCheckout />
 
       <HomeContainer ref={sliderRef} className="keen-slider">
         { 

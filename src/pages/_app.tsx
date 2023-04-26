@@ -12,8 +12,6 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <CartProvider>
       <Container>
-        <Header />
-        <CartCheckout />
         
         <Component {...pageProps} />
       </Container>

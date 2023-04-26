@@ -19,6 +19,7 @@ interface CartContextData {
   isCartCheckoutOpen: boolean;
   openCartCheckout: () => void;
   closeCartCheckout: () => void;
+  clearCart: () => void;
 }
 
 interface CartProviderProps {
@@ -48,6 +49,11 @@ export function CartProvider({ children }: CartProviderProps) {
       calculateCheckoutValues(parsedCart)
     }   
   }, [calculateCheckoutValues]);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+    localStorage.removeItem('ignite_shop:cart');
+  }, []);
 
   function addItemToCart(item: CartItem) {
     setCartItems(state => {
@@ -86,16 +92,6 @@ export function CartProvider({ children }: CartProviderProps) {
     });
   }
 
-  // function getCartItems() {
-  //   const cart = localStorage.getItem('ignite_shop:cart');
-
-  //   if (cart) {
-  //     setCartItems(JSON.parse(cart));
-
-  //     calculateCheckoutValues(cartItems)
-  //   }    
-  // }
-
   function openCartCheckout() {
     setCartCheckoutOpen(true);
   }
@@ -117,7 +113,8 @@ export function CartProvider({ children }: CartProviderProps) {
       checkoutTotalPrice,
       isCartCheckoutOpen,
       openCartCheckout,
-      closeCartCheckout
+      closeCartCheckout,
+      clearCart
     }}>
       { children }
     </CartContext.Provider>

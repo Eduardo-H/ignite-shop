@@ -7,6 +7,10 @@ import Stripe from 'stripe';
 
 import { stripe } from '@/lib/stripe';
 import { CartContext } from '@/contexts/CartContext';
+
+import { Header } from '@/components/Header';
+import { CartCheckout } from '@/components/CartCheckout';
+
 import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
 
 interface ProductProps {
@@ -47,6 +51,9 @@ export default function Product({ product }: ProductProps) {
       <Head>
         <title>Ignite Shop | {product.name}</title>
       </Head>
+
+      <Header />
+      <CartCheckout />
 
       <ProductContainer>
         <ImageContainer>
