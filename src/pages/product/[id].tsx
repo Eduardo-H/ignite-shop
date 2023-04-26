@@ -1,14 +1,13 @@
+import { useContext } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Image from 'next/image';
-import { stripe } from '@/lib/stripe';
 import Stripe from 'stripe';
 
-import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { useContext, useState } from 'react';
-import Head from 'next/head';
+import { stripe } from '@/lib/stripe';
 import { CartContext } from '@/contexts/CartContext';
+import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
 
 interface ProductProps {
   product: {
@@ -24,11 +23,10 @@ interface ProductProps {
 
 export default function Product({ product }: ProductProps) {
   const { isFallback } = useRouter();
-  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
 
   const { addItemToCart } = useContext(CartContext);
 
-  async function handleByProduct() {
+  function handleByProduct() {
     addItemToCart({
       productId: product.id,
       description: product.description,
@@ -38,24 +36,6 @@ export default function Product({ product }: ProductProps) {
       quantity: 1,
       defaultPriceId: product.defaultPriceId
     });
-
-    window.location.href = '/';
-
-    // try {
-    //   setIsCreatingCheckoutSession(true);
-
-    //   const response = await axios.post('/api/checkout', {
-    //     priceId: product.defaultPriceId
-    //   });
-
-    //   const { checkoutUrl } = response.data;
-
-    //   window.location.href = checkoutUrl;
-    // } catch (error) {
-    //   setIsCreatingCheckoutSession(false);
-
-    //   alert('Error trying to redirect to checkout');
-    // }
   }
 
   if (isFallback) {
@@ -79,7 +59,7 @@ export default function Product({ product }: ProductProps) {
 
           <p>{product.description}</p>
 
-          <button onClick={handleByProduct} disabled={isCreatingCheckoutSession}>
+          <button onClick={handleByProduct}>
             Buy now
           </button>
         </ProductDetails>
